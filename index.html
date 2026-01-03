@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Matrix Club</title>
+  <meta name="description" content="Matrix Club - Enter the digital realm. Connect with us across all platforms." />
+  <meta name="author" content="Matrix Club" />
+  <meta name="theme-color" content="#00ff41" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://sets.hugeicons.com/YOUR-SET-ID.css" crossorigin="anonymous">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --background: #000200;
+      --foreground: #e0ffe0;
+      --primary: #00ff41;
+      --primary-dim: #00cc33;
+      --muted: #0a1a0a;
+      --muted-foreground: #4a7a4a;
+      --card: rgba(0, 20, 0, 0.8);
+      --border: rgba(0, 255, 65, 0.2);
+    }
+
+    body {
+      font-family: 'Share Tech Mono', monospace;
+      background: var(--background);
+      color: var(--foreground);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Matrix Rain Canvas */
+    #matrix-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      opacity: 0.3;
+    }
+
+    /* Scan Lines Overlay */
+    .scan-lines {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.1) 0px,
+        rgba(0, 0, 0, 0.1) 1px,
+        transparent 1px,
+        transparent 2px
+      );
+    }
+
+    /* Main Container */
+    .container {
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 1rem;
+    }
+
+    /* Profile Header */
+    .profile-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 2.5rem;
+      animation: fadeIn 0.6s ease-out forwards;
+    }
+
+    .avatar-ring {
+      position: relative;
+      padding: 4px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dim));
+      margin-bottom: 1.5rem;
+      box-shadow: 
+        0 0 30px rgba(0, 255, 65, 0.4),
+        0 0 60px rgba(0, 255, 65, 0.2),
+        inset 0 0 20px rgba(0, 255, 65, 0.1);
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    .avatar {
+      width: 7rem;
+      height: 7rem;
+      border-radius: 50%;
+      background: var(--background);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    
+    .avatar-letter img{
+        width: 100px;
+        
+    }
+    /*.avatar-letter {
+      font-size: 3rem;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      color: var(--primary);
+      text-shadow: 
+        0 0 10px var(--primary),
+        0 0 20px var(--primary),
+        0 0 40px var(--primary);
+      animation: float 3s ease-in-out infinite;
+    }*/
+
+    .club-name {
+      font-size: 2.5rem;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      color: var(--foreground);
+      text-shadow: 
+        0 0 10px var(--primary),
+        0 0 20px var(--primary);
+      margin-bottom: 0.75rem;
+      letter-spacing: 0.1em;
+    }
+
+    .tagline {
+      color: var(--muted-foreground);
+      font-size: 1.125rem;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      color: rgba(0, 255, 65, 0.7);
+    }
+
+    .status-line {
+      width: 2rem;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(0, 255, 65, 0.5));
+    }
+
+    .status-line.right {
+      background: linear-gradient(to left, transparent, rgba(0, 255, 65, 0.5));
+    }
+
+    .status-dot {
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    /* Links Container */
+    .links-container {
+      width: 100%;
+      max-width: 28rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    /* Link Button */
+    .link-button {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      text-decoration: none;
+      color: var(--foreground);
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      opacity: 0;
+      animation: fadeIn 0.6s ease-out forwards;
+    }
+
+    .link-button:hover {
+      background: rgba(0, 255, 65, 0.1);
+      border-color: var(--primary);
+      box-shadow: 
+        0 0 20px rgba(0, 255, 65, 0.3),
+        inset 0 0 20px rgba(0, 255, 65, 0.05);
+      transform: translateX(4px);
+    }
+
+    .link-icon {
+      color: var(--primary);
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .link-content {
+      flex: 1;
+      text-align: left;
+    }
+
+    .link-label {
+      display: block;
+      color: var(--foreground);
+      font-weight: 500;
+    }
+
+    .link-username {
+      display: block;
+      font-size: 0.875rem;
+      color: var(--muted-foreground);
+    }
+
+    .link-arrow {
+      color: var(--muted-foreground);
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 3rem;
+      text-align: center;
+      color: var(--muted-foreground);
+      font-size: 0.875rem;
+      opacity: 0;
+      animation: fadeIn 0.6s ease-out 1.4s forwards;
+    }
+
+    .footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-shadow: 0 0 10px var(--primary);
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.7;
+      }
+    }
+
+    /* Responsive */
+    @media (min-width: 768px) {
+      .club-name {
+        font-size: 3rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Matrix Rain Background -->
+  <canvas id="matrix-canvas"></canvas>
+  
+  <!-- Scan Lines Effect -->
+  <div class="scan-lines"></div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Profile Header -->
+    <div class="profile-header">
+      <div class="avatar-ring">
+        <div class="avatar">
+          <span class="avatar-letter"><img src="1750648600629.jpg" alt="image"></span>
+        </div>
+      </div>
+      <h1 class="club-name">MATRIX CLUB</h1>
+      <p class="tagline">&lt;/&gt; Enter The Digital Realm</p>
+      <div class="status">
+        <span class="status-line"></span>
+        <span class="status-dot">● ONLINE</span>
+        <span class="status-line right"></span>
+      </div>
+    </div>
+
+    <!-- Social Links -->
+    <div class="links-container" id="links-container">
+      <!-- Links will be inserted by JavaScript -->
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>© 2025 Matrix The Multimedia Club • <a href="#">Enter the Matrix</a></p>
+    </footer>
+  </div>
+
+  <script>
+    // Matrix Rain Animation
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const chars = 'MATRIXCLUB01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+    const charArray = chars.split('');
+    const fontSize = 14;
+    let columns = canvas.width / fontSize;
+    let drops = [];
+
+    for (let i = 0; i < columns; i++) {
+      drops[i] = Math.random() * -100;
+    }
+
+    function drawMatrix() {
+      ctx.fillStyle = 'rgba(0, 2, 0, 0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = '#00ff41';
+      ctx.font = `${fontSize}px Share Tech Mono`;
+
+      for (let i = 0; i < drops.length; i++) {
+        const char = charArray[Math.floor(Math.random() * charArray.length)];
+        const x = i * fontSize;
+        const y = drops[i] * fontSize;
+
+        // Brighter character at the front
+        if (drops[i] > 0) {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(char, x, y);
+          ctx.fillStyle = '#00ff41';
+        }
+
+        // Trail characters
+        ctx.globalAlpha = 0.8;
+        ctx.fillText(char, x, y - fontSize);
+        ctx.globalAlpha = 0.6;
+        ctx.fillText(charArray[Math.floor(Math.random() * charArray.length)], x, y - fontSize * 2);
+        ctx.globalAlpha = 0.4;
+        ctx.fillText(charArray[Math.floor(Math.random() * charArray.length)], x, y - fontSize * 3);
+        ctx.globalAlpha = 1;
+
+        if (y > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+
+    setInterval(drawMatrix, 50);
+
+    // Handle resize for matrix
+    window.addEventListener('resize', () => {
+      columns = canvas.width / fontSize;
+      drops = [];
+      for (let i = 0; i < columns; i++) {
+        drops[i] = Math.random() * -100;
+      }
+    });
+
+    // Social Links Data
+    const socialLinks = [
+      { href: 'https://www.instagram.com/thematrixclub_vitb?igsh=MWUwam9tNHNhd21pcQ==', icon: 'instagram', label: 'Instagram', username: '@thematrixclub_vitb' },
+
+    //   { href: 'https://twitter.com/matrixclub', icon: 'twitter', label: 'Twitter / X', username: '@matrixclub' },
+
+    //   { href: 'https://github.com/matrixclub', icon: 'github', label: 'GitHub', username: '@matrixclub' },
+
+    //   { href: 'https://discord.gg/matrixclub', icon: 'discord', label: 'Discord', username: 'Join our server' },
+
+      { href: 'https://www.linkedin.com/company/matrixclub-vitbhopal/', icon: 'linkedin', label: 'LinkedIn', username: 'matrixclub_vitbhopal' },
+
+    //   { href: 'https://youtube.com/@matrixclub', icon: 'youtube', label: 'YouTube', username: '@matrixclub' },
+
+    //   { href: 'https://twitch.tv/matrixclub', icon: 'twitch', label: 'Twitch', username: '@matrixclub' },
+
+    //   { href: 'https://tiktok.com/@matrixclub', icon: 'tiktok', label: 'TikTok', username: '@matrixclub' },
+
+    //   { href: 'https://facebook.com/matrixclub', icon: 'facebook', label: 'Facebook', username: 'Matrix Club' },
+
+    //   { href: 'https://reddit.com/r/matrixclub', icon: 'reddit', label: 'Reddit', username: 'r/matrixclub' },
+
+    //   { href: 'https://t.me/matrixclub', icon: 'telegram', label: 'Telegram', username: '@matrixclub' },
+
+    //   { href: 'https://open.spotify.com/user/matrixclub', icon: 'spotify', label: 'Spotify', username: 'Matrix Club' },
+    { href: 'https://chat.whatsapp.com/CmPbL8v2XkTEhSd1n5kscS', icon: 'whatsapp', label: 'Whatsapp', username: 'Join Whatsapp' },
+      { href: 'mailto:multimedia_club@vitbhopal.ac.in', icon: 'email', label: 'Email', username: 'multimedia_club@vitbhopal.ac.in' },
+
+      { href: 'https://thematrixclub.netlify.app/', icon: 'website', label: 'Website', username: 'thematrixclub.netlify.app' },
+    ];
+
+    // SVG Icons
+    const icons = {
+      instagram: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>`,
+      twitter: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z"/><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"/></svg>`,
+      github: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>`,
+      discord: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12a1 1 0 1 0 2 0 1 1 0 0 0-2 0m6 0a1 1 0 1 0 2 0 1 1 0 0 0-2 0"/><path d="M15.5 17c0 1 1.5 3 2 3 1.5 0 2.833-1.667 3.5-3 .667-1.667.5-5.833-1.5-11.5-1.457-1.015-3-1.34-4.5-1.5l-1 2h-4l-1-2c-1.5.16-3.043.485-4.5 1.5-2 5.667-2.167 9.833-1.5 11.5.667 1.333 2 3 3.5 3 .5 0 2-2 2-3"/><path d="M7 16.5c3.5 1 6.5 1 10 0"/></svg>`,
+      linkedin: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>`,
+      youtube: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg>`,
+      twitch: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2H3v16h5v4l4-4h5l4-4V2zm-10 9V7m5 4V7"/></svg>`,
+      tiktok: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>`,
+      facebook: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>`,
+      reddit: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="14" r="6"/><circle cx="18" cy="6" r="2"/><path d="M12 8V2l4 4"/><path d="M8.5 13a1 1 0 1 0 2 0 1 1 0 0 0-2 0m5 0a1 1 0 1 0 2 0 1 1 0 0 0-2 0m-5.5 4c1 1 2.5 1.5 4 1.5s3-.5 4-1.5"/></svg>`,
+      telegram: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>`,
+      spotify: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 15c4-1 7-1 10 1M8 12c4.5-1.5 7.5-1.5 11 0M9 9c3.5-1 6.5-1 9 1"/></svg>`,
+      email: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>`,
+      website: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>`,
+      whatsapp:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" color="currentColor" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round">
+    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 13.3789 2.27907 14.6926 2.78382 15.8877C3.06278 16.5481 3.20226 16.8784 3.21953 17.128C3.2368 17.3776 3.16334 17.6521 3.01642 18.2012L2 22L5.79877 20.9836C6.34788 20.8367 6.62244 20.7632 6.87202 20.7805C7.12161 20.7977 7.45185 20.9372 8.11235 21.2162C9.30745 21.7209 10.6211 22 12 22Z" />
+    <path d="M8.58815 12.3773L9.45909 11.2956C9.82616 10.8397 10.2799 10.4153 10.3155 9.80826C10.3244 9.65494 10.2166 8.96657 10.0008 7.58986C9.91601 7.04881 9.41086 7 8.97332 7C8.40314 7 8.11805 7 7.83495 7.12931C7.47714 7.29275 7.10979 7.75231 7.02917 8.13733C6.96539 8.44196 7.01279 8.65187 7.10759 9.07169C7.51023 10.8548 8.45481 12.6158 9.91948 14.0805C11.3842 15.5452 13.1452 16.4898 14.9283 16.8924C15.3481 16.9872 15.558 17.0346 15.8627 16.9708C16.2477 16.8902 16.7072 16.5229 16.8707 16.165C17 15.8819 17 15.5969 17 15.0267C17 14.5891 16.9512 14.084 16.4101 13.9992C15.0334 13.7834 14.3451 13.6756 14.1917 13.6845C13.5847 13.7201 13.1603 14.1738 12.7044 14.5409L11.6227 15.4118" />
+</svg>`
+    };
+
+    // Render Links
+    const linksContainer = document.getElementById('links-container');
+
+    socialLinks.forEach((link, index) => {
+      const delay = 200 + (index * 100);
+      
+      const linkElement = document.createElement('a');
+      linkElement.href = link.href;
+      linkElement.target = '_blank';
+      linkElement.rel = 'noopener noreferrer';
+      linkElement.className = 'link-button';
+      linkElement.style.animationDelay = `${delay}ms`;
+
+      linkElement.innerHTML = `
+        <span class="link-icon">${icons[link.icon]}</span>
+        <span class="link-content">
+          <span class="link-label">${link.label}</span>
+          <span class="link-username">${link.username}</span>
+        </span>
+        <span class="link-arrow">→</span>
+      `;
+
+      linksContainer.appendChild(linkElement);
+    });
+  </script>
+</body>
+</html>
